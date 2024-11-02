@@ -1,0 +1,57 @@
+services:
+  postgres:
+    container_name: "postgres"
+    image: postgres:13
+    environment:
+      POSTGRES_DB: studios
+      POSTGRES_USER: studios
+      POSTGRES_PASSWORD: studios
+    ports:
+      - "5438:5432"
+    volumes:
+      - ./backend/src/sql:/sql
+
+  backend:
+    build: ./backend/
+    container_name: "backend"
+    ports:
+      - '8081:8081'
+#    volumes:
+#      - ./backend/config.yml:/app/config.yml
+#      - ./backend/logs/:/app/logs/
+    depends_on:
+      - postgres
+
+  swagger:
+    container_name: swagger
+    image: swaggerapi/swagger-ui
+    environment:
+      SWAGGER_JSON: /mnt/openapi.yaml  # Points to the OpenAPI YAML file
+    volumes:
+      - ./docs/swagger/swagger.yaml:/mnt/openapi.yaml  # Adjust the path to your OpenAPI file
+    ports:
+      - "3000:8080"  # Maps port 3000 on the host to 8080 in the container
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:6.19
+    depends_on:
+      - postgres
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@web.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - '5050:80'
+
+  nginx:
+    container_name: nginx
+    image: nginx:1.27
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/readme:/usr/share/nginx/readme
+      - ./nginx/conf:/etc/nginx/conf.d
+      - ./nginx/html:/usr/share/nginx/html
+      - ./nginx/download:/usr/share/nginx/download
+    restart: always
