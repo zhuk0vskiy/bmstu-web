@@ -150,10 +150,10 @@ definitions:
   user.loginRequest:
     properties:
       login:
-        example: "nik"
+        example: "admin"
         type: string
       password:
-        example: "nik"
+        example: "admin"
         type: string
     type: object
 
@@ -1498,4 +1498,4 @@ securityDefinitions:
 swagger: "2.0"
 schemes:
   - http
-host: 'localhost:8081'
+host: 'localhost'

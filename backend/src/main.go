@@ -20,12 +20,13 @@ import (
 
 func main() {
 	ctx := context.Background()
+	fmt.Println("trying to read config")
 	c, err := config.NewConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
 	// Create logger
-
+	fmt.Println("trying to create logger")
 	loggerFile, err := os.OpenFile(
 		c.Logger.File,
 		os.O_APPEND|os.O_CREATE|os.O_WRONLY,
@@ -45,16 +46,19 @@ func main() {
 
 	tokenAuth := jwtauth.New("HS256", []byte(c.JwtKey), nil)
 	fmt.Println(c.JwtKey)
+
+	fmt.Printf("trying to connect db %s with user %s\n", c.Database.Postgres.Database, c.Database.Postgres.User)
 	db, err := newConn(ctx, &c.Database)
 	if err != nil {
 		l.Fatalf("failed to connect to database: %v", err)
 	}
 
+	fmt.Println("trying to new app")
 	a := app.NewApp(db, c, l)
 
+	fmt.Println("trying to make handlers")
 	mux := chi.NewMux()
 	mux.Use(cors.Handler(cors.Options{
-
 		AllowedOrigins:   []string{"https://*", "http://*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
@@ -69,6 +73,7 @@ func main() {
 		r.Route("/v1", func(r chi.Router) {
 			r.Post("/login", v1.LoginHandler(a))
 			r.Post("/signin", v1.SignInHandler(a))
+			r.Get("/test/studios/{id}", v1.GetStudioHandler(a))
 
 			r.Group(func(r chi.Router) {
 				r.Use(jwtauth.Verifier(tokenAuth))
@@ -88,7 +93,7 @@ func main() {
 			})
 
 			r.Route("/studios", func(r chi.Router) {
-				r.Post("/", v1.AddStudioHandler(a))
+
 				r.Group(func(r chi.Router) {
 					r.Use(jwtauth.Verifier(tokenAuth))
 					r.Use(jwtauth.Authenticator(tokenAuth))
@@ -200,8 +205,13 @@ func main() {
 		})
 	})
 
-	fmt.Println("server has started")
-	http.ListenAndServe(":8081", mux)
+	serverPort := fmt.Sprintf(":%s", c.HTTP.Port)
+	fmt.Printf("server has started at port %s\n", serverPort)
+	err = http.ListenAndServe(serverPort, mux)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	//tui.Run(db, c, l)
 }
 
