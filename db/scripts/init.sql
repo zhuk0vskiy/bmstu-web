@@ -160,4 +160,4 @@ insert into equipment(name, studio_id, type) values ('telecaster', 1, 2);
 insert into equipment(name, studio_id, type) values ('strat', 1, 2);
 
 insert into "user"(id, login, password, role, first_name, second_name, third_name) values
-           ('1', 'admin', '$2a$10$53A6AVUmQFr3nx3taVYnjOKQpHh2JTeBxEaIX1NYEh2I9nnepfVPC', 'admin', 'admin', 'admin', 'admin')
+           ('1', 'admin', '$2a$10$53A6AVUmQFr3nx3taVYnjOKQpHh2JTeBxEaIX1NYEh2I9nnepfVPC', 'admin', 'admin', 'admin', 'admin');

@@ -21,7 +21,7 @@ def _(environment, **kw):
     environment.process_exit_code = 0
 
 class WebsiteTestUser(HttpUser):
-    wait_time = between(0.5, 3.0)
+    wait_time = between(0.5, 1.0)
     config = None
 
     @task
