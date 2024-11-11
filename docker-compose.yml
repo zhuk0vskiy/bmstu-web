@@ -175,17 +175,34 @@ services:
       web:
         ipv4_address: 172.28.4.1
 
-  load-testing:
+  load-testing-locust:
     image: locustio/locust
-    container_name: "load-testing"
+    container_name: load-testing-locust
     ports:
       - "9001:8089"
     volumes:
-      - "./load-testing:/mnt/load-testing"
-    command: -f /mnt/load-testing/locustfile.py -u 10000 -r 100 -H http://172.28.22.1
+      - "./load-testing/locust:/mnt/load-testing"
+    depends_on:
+      nginx:
+        condition: service_started
+    entrypoint: ["-f /mnt/load-testing/locustfile.py", "-u 10000", "-r 100", "-H http://172.28.22.1"]
     networks:
       web:
         ipv4_address: 172.28.5.1
+
+  load-testing-gatling:
+    image: denvazh/gatling:latest
+    container_name: load-testing-gatling
+    volumes:
+      - ./load-testing/gatling/simulations:/opt/gatling/user-files/simulations
+      - ./load-testing/gatling/results:/opt/gatling/results
+    depends_on:
+      nginx:
+        condition: service_started
+    entrypoint: ["/bin/sh", "-c", "gatling.sh -s ServerPerSecondLoadSimulation"]
+    networks:
+      web:
+        ipv4_address: 172.28.5.2
 
   nginx:
     container_name: nginx
